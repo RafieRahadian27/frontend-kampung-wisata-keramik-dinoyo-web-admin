@@ -1,0 +1,177 @@
+@import "tailwindcss";
+
+/* Varian `dark:` aktif ketika <html data-theme="dark"> (dikendalikan ThemeContext). */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* ---------------------------------------------------------------------------
+ * Design tokens — diambil langsung dari Figma "High Fidelity-Web Admin".
+ * Palet mengikuti skema Material 3 (terakota + hijau sage + amber).
+ * ------------------------------------------------------------------------- */
+:root {
+  --c-primary: #9a4023;
+  --c-on-primary: #ffffff;
+  --c-primary-container: #ba5838;
+  --c-on-primary-container: #fffbff;
+  --c-primary-fixed: #ffdbd0;
+  --c-primary-fixed-dim: #ffb59e;
+  --c-on-primary-fixed: #3a0b00;
+  --c-on-primary-fixed-variant: #7e2c10;
+
+  --c-secondary: #446557;
+  --c-on-secondary: #ffffff;
+  --c-secondary-container: #c6ebd9;
+  --c-on-secondary-container: #002116;
+  --c-secondary-text: #4a6b5d;
+
+  --c-tertiary: #805200;
+  --c-tertiary-bright: #a06901;
+  --c-tertiary-container: #ffddb4;
+  --c-on-tertiary-container: #291800;
+
+  --c-error: #ba1a1a;
+  --c-error-container: #ffdad6;
+
+  --c-surface: #fff8f4;
+  --c-surface-lowest: #ffffff;
+  --c-surface-low: #faf2ed;
+  --c-surface-container: #f4ece7;
+  --c-surface-high: #eee7e1;
+  --c-surface-highest: #e9e1dc;
+  --c-on-surface: #1e1b18;
+  --c-on-surface-variant: #56423d;
+  --c-outline: #89726b;
+  --c-outline-variant: #dcc1b9;
+  --c-scrim: rgb(30 27 24 / 0.45);
+
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  --c-primary: #ffb59e;
+  --c-on-primary: #5e1700;
+  --c-primary-container: #ba5838;
+  --c-on-primary-container: #fffbff;
+  --c-primary-fixed: #6b2410;
+  --c-primary-fixed-dim: #ffb59e;
+  --c-on-primary-fixed: #ffdbd0;
+  --c-on-primary-fixed-variant: #ffdbd0;
+
+  --c-secondary: #abcfbd;
+  --c-on-secondary: #143729;
+  --c-secondary-container: #2d4d40;
+  --c-on-secondary-container: #c6ebd9;
+  --c-secondary-text: #c6ebd9;
+
+  --c-tertiary: #ffb951;
+  --c-tertiary-bright: #ffb951;
+  --c-tertiary-container: #633f00;
+  --c-on-tertiary-container: #ffddb4;
+
+  --c-error: #ffb4ab;
+  --c-error-container: #5c1512;
+
+  --c-surface: #18120f;
+  --c-surface-lowest: #221b18;
+  --c-surface-low: #1d1714;
+  --c-surface-container: #2a221f;
+  --c-surface-high: #342b28;
+  --c-surface-highest: #3f3532;
+  --c-on-surface: #ede0db;
+  --c-on-surface-variant: #d8c2bb;
+  --c-outline: #a08d86;
+  --c-outline-variant: #56423d;
+  --c-scrim: rgb(0 0 0 / 0.6);
+
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-primary: var(--c-primary);
+  --color-on-primary: var(--c-on-primary);
+  --color-primary-container: var(--c-primary-container);
+  --color-on-primary-container: var(--c-on-primary-container);
+  --color-primary-fixed: var(--c-primary-fixed);
+  --color-primary-fixed-dim: var(--c-primary-fixed-dim);
+  --color-on-primary-fixed: var(--c-on-primary-fixed);
+  --color-on-primary-fixed-variant: var(--c-on-primary-fixed-variant);
+
+  --color-secondary: var(--c-secondary);
+  --color-on-secondary: var(--c-on-secondary);
+  --color-secondary-container: var(--c-secondary-container);
+  --color-on-secondary-container: var(--c-on-secondary-container);
+  --color-secondary-text: var(--c-secondary-text);
+
+  --color-tertiary: var(--c-tertiary);
+  --color-tertiary-bright: var(--c-tertiary-bright);
+  --color-tertiary-container: var(--c-tertiary-container);
+  --color-on-tertiary-container: var(--c-on-tertiary-container);
+
+  --color-error: var(--c-error);
+  --color-error-container: var(--c-error-container);
+
+  --color-surface: var(--c-surface);
+  --color-surface-lowest: var(--c-surface-lowest);
+  --color-surface-low: var(--c-surface-low);
+  --color-surface-container: var(--c-surface-container);
+  --color-surface-high: var(--c-surface-high);
+  --color-surface-highest: var(--c-surface-highest);
+  --color-on-surface: var(--c-on-surface);
+  --color-on-surface-variant: var(--c-on-surface-variant);
+  --color-outline: var(--c-outline);
+  --color-outline-variant: var(--c-outline-variant);
+  --color-scrim: var(--c-scrim);
+
+  /* Warna brand tetap (tidak berubah di mode gelap) untuk panel terakota login. */
+  --color-brand: #9a4023;
+  --color-brand-soft: #ba5838;
+  --color-brand-tint: #ffdbd0;
+
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-playfair), Georgia, "Times New Roman", serif;
+
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.05);
+  --shadow-soft: 0 4px 20px rgb(62 42 33 / 0.06);
+  --shadow-primary: 0 2px 8px rgb(154 64 35 / 0.25);
+  --shadow-float: 0 8px 10px rgb(0 0 0 / 0.1), 0 20px 25px rgb(0 0 0 / 0.1);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-surface text-on-surface font-sans antialiased;
+  }
+
+  ::selection {
+    @apply bg-primary-fixed text-on-primary-fixed;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-primary;
+  }
+}
+
+@layer utilities {
+  /* Label huruf kapital kecil yang sering muncul di desain (11px / 600 / tracking 0.04em). */
+  .text-overline {
+    @apply text-[11px] leading-[14px] font-semibold tracking-[0.04em] uppercase;
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--c-outline-variant) transparent;
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
