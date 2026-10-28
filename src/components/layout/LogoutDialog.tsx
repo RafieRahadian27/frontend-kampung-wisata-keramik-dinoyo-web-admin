@@ -5,8 +5,7 @@ import { useTransition } from "react";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { useAdminShell } from "@/context/AdminShellContext";
-import { destroySession } from "@/lib/actions/session";
-import { authApi } from "@/lib/api/client";
+import { logout } from "@/lib/actions/auth";
 
 const TITLE_ID = "logout-dialog-title";
 
@@ -16,9 +15,8 @@ export function LogoutDialog() {
 
   const handleLogout = () => {
     startTransition(async () => {
-      // Beritahu backend (abaikan bila offline), lalu hapus cookie sesi & redirect ke /login.
-      await authApi.logout().catch(() => undefined);
-      await destroySession();
+      // Server Action: cabut sesi di Express, hapus cookie, lalu redirect ke /login.
+      await logout();
     });
   };
 

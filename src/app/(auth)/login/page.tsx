@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
-import { LoginBrandPanel } from "@/components/features/auth/LoginBrandPanel";
-import { LoginForm } from "@/components/features/auth/LoginForm";
+import { redirect } from "next/navigation";
+import { getCurrentUser } from "@/lib/dal";
+import { safeRedirectPath } from "@/lib/session";
+import { LoginBrandPanel } from "./components/LoginBrandPanel";
+import { LoginForm } from "./components/LoginForm";
 
 export const metadata: Metadata = {
   title: "Masuk Admin",
@@ -8,17 +11,25 @@ export const metadata: Metadata = {
 
 export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const params = await searchParams;
-  const nextPath = typeof params.next === "string" && params.next.startsWith("/") ? params.next : "/dashboard";
-  const justLoggedOut = params.keluar === "1";
+  const nextPath = safeRedirectPath(params.next);
 
+  // Sudah login dengan sesi yang masih sah → tidak perlu melihat form lagi.
+  // Bila API tidak bisa dihubungi, tetap tampilkan form (pesan error muncul saat submit).
+  const user = await getCurrentUser().catch(() => null);
+  if (user) redirect(nextPath);
+
+  // Kartu login dua kolom: panel brand (kiri) + formulir masuk (kanan).
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-surface p-0 sm:p-6">
-      <div className="grid w-full max-w-[1232px] overflow-hidden bg-surface shadow-float sm:rounded-3xl lg:min-h-[min(976px,calc(100dvh-3rem))] lg:grid-cols-2">
-        <LoginBrandPanel />
-        <section className="flex items-center justify-center px-4 py-10 sm:px-10 lg:p-16">
-          <LoginForm nextPath={nextPath} justLoggedOut={justLoggedOut} />
-        </section>
-      </div>
-    </main>
+    <div className="grid w-full max-w-[1232px] overflow-hidden bg-surface shadow-float sm:rounded-3xl lg:min-h-[min(976px,calc(100dvh-3rem))] lg:grid-cols-2">
+      <LoginBrandPanel />
+      <section className="flex items-center justify-center px-4 py-10 sm:px-10 lg:p-16">
+        <LoginForm
+          nextPath={nextPath}
+          justLoggedOut={params.keluar === "1"}
+          sessionExpired={params.sesi === "berakhir"}
+          justRegistered={params.daftar === "berhasil"}
+        />
+      </section>
+    </div>
   );
 }

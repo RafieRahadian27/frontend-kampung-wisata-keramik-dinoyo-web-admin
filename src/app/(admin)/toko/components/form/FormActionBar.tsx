@@ -22,7 +22,7 @@ export function FormActionBar({ isDirty, lastSaved, submitting, onSaveDraft, onP
   const jam = formatJam(lastSaved);
 
   return (
-    <div className="sticky bottom-4 z-20 flex flex-col gap-4 rounded-2xl border border-outline-variant/30 bg-surface-lowest/95 p-4 shadow-float backdrop-blur lg:flex-row lg:items-center lg:justify-between">
+    <div className="sticky bottom-4 z-20 flex flex-col gap-4 rounded-2xl border border-outline-variant/30 bg-surface-lowest/95 p-4 shadow-float backdrop-blur xl:flex-row xl:items-center xl:justify-between">
       <div className="flex items-start gap-3">
         <span className={cn("mt-1.5 size-2.5 shrink-0 rounded-full", isDirty ? "bg-secondary" : "bg-outline")} aria-hidden />
         <div>
@@ -32,7 +32,7 @@ export function FormActionBar({ isDirty, lastSaved, submitting, onSaveDraft, onP
           </p>
         </div>
       </div>
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 lg:flex lg:items-center">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 xl:flex xl:items-center">
         <Button variant="tonal" onClick={onSaveDraft} isLoading={submitting === "draft"} disabled={submitting !== null}>
           Simpan Sebagai Draf
         </Button>

@@ -10,10 +10,11 @@ interface ToggleProps {
   onChange: (checked: boolean) => void;
   tone?: "secondary" | "primary";
   adornment?: React.ReactNode;
+  disabled?: boolean;
 }
 
 /** Saklar on/off (switch) yang aksesibel untuk pengaturan status. */
-export function Toggle({ label, description, checked, onChange, tone = "secondary", adornment }: ToggleProps) {
+export function Toggle({ label, description, checked, onChange, tone = "secondary", adornment, disabled }: ToggleProps) {
   const id = useId();
   return (
     <div className="flex items-start justify-between gap-4">
@@ -29,9 +30,10 @@ export function Toggle({ label, description, checked, onChange, tone = "secondar
         type="button"
         role="switch"
         aria-checked={checked}
+        disabled={disabled}
         onClick={() => onChange(!checked)}
         className={cn(
-          "relative mt-1 h-7 w-12 shrink-0 rounded-full transition-colors",
+          "relative mt-1 h-7 w-12 shrink-0 rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-50",
           checked ? (tone === "primary" ? "bg-primary" : "bg-secondary") : "bg-surface-highest",
         )}
       >

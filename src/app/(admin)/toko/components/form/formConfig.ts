@@ -9,6 +9,17 @@ export const WILAYAH_LORONG = [
   "Koridor Jl. MT Haryono (Depan)",
 ];
 
+export const JAM_BUKA_PRESET = ["Senin - Minggu, 09.00 - 17.00", "Senin - Sabtu, 08.00 - 16.00", "Sabtu - Minggu, 09.00 - 15.00"];
+
+export const FASILITAS_STUDIO = [
+  "Workshop Putar Tanah Liat",
+  "Kelas Lukis Keramik",
+  "Area Parkir Bus",
+  "Pembayaran QRIS",
+  "Pengiriman Luar Kota",
+  "Toilet & Musala",
+] as const;
+
 export const MAX_NAMA = 60;
 export const MAX_DESKRIPSI = 600;
 
@@ -22,7 +33,8 @@ export const EMPTY_TOKO_FORM: TokoFormValues = {
   alamat: "",
   koordinat: "-7.9421, 112.6087",
   whatsapp: "",
-  jamBuka: "Senin - Minggu, 09.00 - 17.00",
+  jamBuka: JAM_BUKA_PRESET[0],
+  fasilitas: [],
   aktifPublik: true,
   akreditasi: false,
 };
@@ -39,6 +51,7 @@ export function toFormValues(toko: Toko): TokoFormValues {
     koordinat: toko.koordinat,
     whatsapp: toko.whatsapp,
     jamBuka: toko.jamBuka,
+    fasilitas: toko.fasilitas ?? [],
     aktifPublik: toko.aktifPublik,
     akreditasi: toko.akreditasi,
   };

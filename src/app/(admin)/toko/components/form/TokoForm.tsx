@@ -17,6 +17,7 @@ import { IdentitySection } from "./IdentitySection";
 import { LocationSection } from "./LocationSection";
 import { MediaSection } from "./MediaSection";
 import { NarrativeSection } from "./NarrativeSection";
+import { OperationalSection } from "./OperationalSection";
 import { StatusSection } from "./StatusSection";
 import { validateTokoForm, type TokoFormErrors } from "./formConfig";
 
@@ -122,6 +123,7 @@ export function TokoForm({ mode, initialValues, slug, coverPhoto, lastSaved }: T
           <IdentitySection values={values} errors={errors} updateField={updateField} />
           <NarrativeSection value={values.deskripsi} onChange={(deskripsi) => updateField("deskripsi", deskripsi)} />
           <ContactSection values={values} errors={errors} updateField={updateField} />
+          <OperationalSection values={values} errors={errors} updateField={updateField} />
         </div>
         <div className="flex min-w-0 flex-col gap-6">
           <MediaSection initialCover={coverPhoto} />

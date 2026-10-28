@@ -2,11 +2,32 @@
 
 export type Tone = "primary" | "secondary" | "tertiary" | "neutral" | "error" | "solid";
 
+export type Role = "admin" | "pengrajin";
+
+export type Permission =
+  | "dashboard:read"
+  | "laporan:read"
+  | "toko:read"
+  | "toko:create"
+  | "toko:update"
+  | "toko:delete"
+  | "pengajuan:decide"
+  | "produk:read"
+  | "produk:delete"
+  | "akun:read"
+  | "akun:update";
+
+/** Pengguna yang sedang login, hasil verifikasi sesi oleh Express (`GET /auth/me`). */
 export interface AdminUser {
+  id: number;
   nama: string;
   sapaan: string;
   email: string;
+  /** Label peran untuk tampilan, mis. "Admin Paguyuban". */
   peran: string;
+  role: Role;
+  izin: Permission[];
+  tokoSlugs: string[];
 }
 
 export type StatusToko = "terverifikasi" | "menunggu" | "nonaktif";
@@ -36,9 +57,11 @@ export interface Toko {
   aktifPublik: boolean;
   akreditasi: boolean;
   diperbarui: string;
+  /** Belum disimpan oleh API (frontend dulu) — bisa kosong. */
+  fasilitas?: string[];
 }
 
-export type TokoFormValues = Pick<
+export type TokoFormValues = { fasilitas: string[] } & Pick<
   Toko,
   | "nama"
   | "pemilik"
@@ -78,6 +101,7 @@ export interface Produk {
   id: number;
   nama: string;
   sku: string;
+  tokoSlug: string;
   teknik: string;
   foto: string;
   badge?: string;
@@ -120,6 +144,22 @@ export interface Akun {
   status: StatusAkun;
   terakhirAktif: string;
   tone: Tone;
+  /** Diisi saat pendaftaran mandiri; akun dari data awal boleh kosong. */
+  umur?: number | null;
+}
+
+/** Body POST /auth/register (pendaftaran mandiri pengrajin). */
+export interface RegisterPayload {
+  nama: string;
+  umur: number;
+  nik: string;
+  whatsapp: string;
+  toko: string;
+  lokasi: string;
+  peran: PeranAkun;
+  username: string;
+  email: string;
+  password: string;
 }
 
 export interface RingkasanAkun {
@@ -182,7 +222,39 @@ export interface LaporanData {
   unduhan: { judul: string; detail: string; jenis: "kas" | "sertifikat" | "rekap" }[];
 }
 
-export interface ApiResponse<T> {
+/* Data statis frontend (lihat src/data) — menunggu endpoint audit log di Express. */
+
+export type JenisAktivitas = "toko" | "produk" | "akun" | "verifikasi" | "reservasi";
+
+export interface Aktivitas {
+  id: string;
+  jenis: JenisAktivitas;
+  judul: string;
+  detail: string;
+  pelaku: string;
+  waktu: string;
+}
+
+export type JenisRiwayatAkun = "login" | "gagal" | "status" | "sandi";
+
+export interface RiwayatAkun {
+  id: string;
+  jenis: JenisRiwayatAkun;
+  akun: string;
+  toko: string;
+  keterangan: string;
+  perangkat: string;
+  waktu: string;
+}
+
+/**
+ * Format respons standar dari Express:
+ *   sukses → { success: true, message?, data, meta? }
+ *   gagal  → { success: false, message, error: { code, details? }, meta: { requestId, timestamp } }
+ */
+export interface ApiResponse<T, M = undefined> {
+  success: boolean;
   data: T;
   message?: string;
+  meta: M;
 }

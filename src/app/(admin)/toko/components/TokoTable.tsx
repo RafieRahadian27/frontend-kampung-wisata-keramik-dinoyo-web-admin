@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { useAdminShell } from "@/context/AdminShellContext";
 import { cn } from "@/lib/utils";
 import type { Toko } from "@/types";
 import { STATUS_TOKO, TokoBadge, spesialisasiTone } from "./tokoMeta";
@@ -41,6 +42,7 @@ function TokoIdentity({ toko }: { toko: Toko }) {
 }
 
 function RowActions({ toko, onDelete }: { toko: Toko; onDelete: (toko: Toko) => void }) {
+  const { can } = useAdminShell();
   return (
     <div className="flex items-center gap-2">
       <Link
@@ -51,15 +53,17 @@ function RowActions({ toko, onDelete }: { toko: Toko; onDelete: (toko: Toko) => 
       >
         <Pencil className="size-4" />
       </Link>
-      <button
-        type="button"
-        onClick={() => onDelete(toko)}
-        aria-label={`Hapus ${toko.nama}`}
-        title="Hapus toko"
-        className="inline-flex size-9 items-center justify-center rounded-lg bg-error-container/60 text-error transition hover:bg-error-container"
-      >
-        <Trash2 className="size-4" />
-      </button>
+      {can("toko:delete") && (
+        <button
+          type="button"
+          onClick={() => onDelete(toko)}
+          aria-label={`Hapus ${toko.nama}`}
+          title="Hapus toko"
+          className="inline-flex size-9 items-center justify-center rounded-lg bg-error-container/60 text-error transition hover:bg-error-container"
+        >
+          <Trash2 className="size-4" />
+        </button>
+      )}
     </div>
   );
 }

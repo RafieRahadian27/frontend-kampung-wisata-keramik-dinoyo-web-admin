@@ -1,19 +1,22 @@
 "use client";
 
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { TextField } from "@/components/ui/FormField";
 import { useToast } from "@/context/ToastContext";
-import { createSession } from "@/lib/actions/session";
-import { authApi } from "@/lib/api/client";
+import { login } from "@/lib/actions/auth";
 import { PORTAL_PUBLIK_URL } from "@/constants/navigation";
+import { validateLoginIdentifier } from "@/lib/validation";
 
 interface LoginFormProps {
   nextPath: string;
   justLoggedOut: boolean;
+  sessionExpired: boolean;
+  justRegistered: boolean;
 }
 
 interface FormErrors {
@@ -22,15 +25,22 @@ interface FormErrors {
   form?: string;
 }
 
+const validateLoginPassword = (password: string) => {
+  if (!password) return "Kata sandi wajib diisi.";
+  if (password.length < 6) return "Kata sandi minimal 6 karakter.";
+  return undefined;
+};
+
 function validate(identifier: string, password: string): FormErrors {
   const errors: FormErrors = {};
-  if (!identifier.trim()) errors.identifier = "Email atau username wajib diisi.";
-  if (!password) errors.password = "Kata sandi wajib diisi.";
-  else if (password.length < 6) errors.password = "Kata sandi minimal 6 karakter.";
+  const identifierError = validateLoginIdentifier(identifier);
+  const passwordError = validateLoginPassword(password);
+  if (identifierError) errors.identifier = identifierError;
+  if (passwordError) errors.password = passwordError;
   return errors;
 }
 
-export function LoginForm({ nextPath, justLoggedOut }: LoginFormProps) {
+export function LoginForm({ nextPath, justLoggedOut, sessionExpired, justRegistered }: LoginFormProps) {
   const router = useRouter();
   const { showToast } = useToast();
 
@@ -44,16 +54,23 @@ export function LoginForm({ nextPath, justLoggedOut }: LoginFormProps) {
 
   // useRef: fokus otomatis ke input pertama tanpa memicu render ulang.
   const identifierRef = useRef<HTMLInputElement>(null);
-  // Penanda agar toast logout hanya muncul sekali (efek dijalankan dua kali di Strict Mode).
-  const hasAnnouncedLogout = useRef(false);
+  // Penanda agar toast hanya muncul sekali (efek dijalankan dua kali di Strict Mode).
+  const hasAnnounced = useRef(false);
 
   useEffect(() => {
     identifierRef.current?.focus();
-    if (justLoggedOut && !hasAnnouncedLogout.current) {
-      hasAnnouncedLogout.current = true;
+    if (hasAnnounced.current) return;
+    if (justLoggedOut) {
+      hasAnnounced.current = true;
       showToast("Anda telah keluar dari panel admin.", "info");
+    } else if (sessionExpired) {
+      hasAnnounced.current = true;
+      showToast("Sesi Anda berakhir. Silakan masuk kembali.", "info");
+    } else if (justRegistered) {
+      hasAnnounced.current = true;
+      showToast("Pendaftaran berhasil. Akun bisa dipakai setelah diaktifkan admin paguyuban.");
     }
-  }, [justLoggedOut, showToast]);
+  }, [justLoggedOut, sessionExpired, justRegistered, showToast]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -66,14 +83,18 @@ export function LoginForm({ nextPath, justLoggedOut }: LoginFormProps) {
 
     setSubmitting(true);
     try {
-      const { data } = await authApi.login(identifier, password);
-      await createSession(data.token, data.user, remember);
-      showToast(`Selamat datang, ${data.user.sapaan}!`);
-      router.replace(nextPath);
+      // Server Action: kredensial diverifikasi Express, token disimpan sebagai cookie HttpOnly.
+      const result = await login({ identifier, password, remember, next: nextPath });
+      if (!result.ok) {
+        setErrors({ form: result.message });
+        setSubmitting(false);
+        return;
+      }
+      showToast(`Selamat datang, ${result.sapaan}!`);
+      router.replace(result.redirectTo);
       router.refresh();
-    } catch (error) {
-      const message = error instanceof Error && error.message !== "Failed to fetch" ? error.message : "Server API tidak dapat dihubungi.";
-      setErrors({ form: message });
+    } catch {
+      setErrors({ form: "Server tidak dapat dihubungi. Coba lagi." });
       setSubmitting(false);
     }
   };
@@ -97,8 +118,14 @@ export function LoginForm({ nextPath, justLoggedOut }: LoginFormProps) {
           name="identifier"
           autoComplete="username"
           placeholder="nama@email.com"
+          autoCapitalize="none"
+          spellCheck={false}
           value={identifier}
-          onChange={(event) => setIdentifier(event.target.value)}
+          onChange={(event) => {
+            setIdentifier(event.target.value);
+            if (errors.identifier) setErrors((current) => ({ ...current, identifier: validateLoginIdentifier(event.target.value) }));
+          }}
+          onBlur={() => identifier && setErrors((current) => ({ ...current, identifier: validateLoginIdentifier(identifier) }))}
           error={errors.identifier}
         />
 
@@ -110,7 +137,10 @@ export function LoginForm({ nextPath, justLoggedOut }: LoginFormProps) {
           autoComplete="current-password"
           placeholder="Masukkan kata sandi"
           value={password}
-          onChange={(event) => setPassword(event.target.value)}
+          onChange={(event) => {
+            setPassword(event.target.value);
+            if (errors.password) setErrors((current) => ({ ...current, password: validateLoginPassword(event.target.value) }));
+          }}
           error={errors.password}
           trailing={
             <button
@@ -142,14 +172,19 @@ export function LoginForm({ nextPath, justLoggedOut }: LoginFormProps) {
       </form>
 
       <p className="mt-10 text-center text-base leading-[26px] text-on-surface-variant">
-        Belum punya akun? Akun pengrajin dibuat oleh admin paguyuban. Hubungi Kontak Umum Kampung.
+        Belum punya akun?{" "}
+        <Link href="/daftar" className="font-semibold text-primary hover:underline">
+          Daftar sebagai pengrajin
+        </Link>
       </p>
       <a href={PORTAL_PUBLIK_URL} className="mt-4 flex items-center justify-center gap-2 text-base text-primary hover:underline">
         <ArrowLeft className="size-4" aria-hidden />
         Kembali ke situs
       </a>
       <p className="mt-6 rounded-xl bg-surface-low px-4 py-3 text-center text-xs leading-[18px] text-on-surface-variant">
-        Akun demo: <strong className="text-on-surface">admin@keramikdinoyo.id</strong> / <strong className="text-on-surface">dinoyo123</strong>
+        Akun demo admin: <strong className="text-on-surface">admin</strong> / <strong className="text-on-surface">dinoyo123</strong>
+        <br />
+        Pemilik toko: <strong className="text-on-surface">bambang</strong> / <strong className="text-on-surface">sariasih123</strong>
       </p>
     </div>
   );

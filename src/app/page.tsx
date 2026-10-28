@@ -1,6 +1,9 @@
 import { redirect } from "next/navigation";
+import { homePathFor } from "@/constants/navigation";
+import { verifySession } from "@/lib/dal";
 
-/** Beranda panel admin selalu diarahkan ke dashboard (proxy akan meminta login bila perlu). */
-export default function Home() {
-  redirect("/dashboard");
+/** Beranda diarahkan ke halaman awal sesuai peran (admin → dashboard, pengrajin → toko miliknya). */
+export default async function Home() {
+  const user = await verifySession();
+  redirect(homePathFor(user.izin));
 }

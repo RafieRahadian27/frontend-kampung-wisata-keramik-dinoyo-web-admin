@@ -1,20 +1,24 @@
-import { Download, UserPlus } from "lucide-react";
 import type { Metadata } from "next";
-import { AkunManager } from "@/components/features/akun/AkunManager";
-import { AkunStats } from "@/components/features/akun/AkunStats";
-import { SupportCard } from "@/components/features/akun/SupportCard";
+import { Download, UserPlus } from "lucide-react";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
-import { ToastButton } from "@/components/ui/ToastButton";
 import { Eyebrow, PageHeader } from "@/components/ui/PageHeader";
+import { ToastButton } from "@/components/ui/ToastButton";
+import { RIWAYAT_AKUN } from "@/data/aktivitas";
 import { getAkunList } from "@/lib/api/server";
+import { requirePermission } from "@/lib/dal";
+import { AccountActivityLog } from "./components/AccountActivityLog";
+import { AkunManager } from "./components/AkunManager";
+import { AkunStats } from "./components/AkunStats";
+import { SupportCard } from "./components/SupportCard";
 
 export const metadata: Metadata = { title: "Kelola Akun Pengrajin" };
 
 export default async function KelolaAkunPage() {
+  await requirePermission("akun:read");
   const { data, ringkasan } = await getAkunList();
 
   return (
-    <div className="flex flex-col gap-8">
+    <>
       <PageHeader
         eyebrow={
           <div className="flex flex-col gap-3">
@@ -39,7 +43,9 @@ export default async function KelolaAkunPage() {
       />
       <AkunStats ringkasan={ringkasan} />
       <AkunManager initialAkun={data} total={ringkasan.total} />
+      {/* Riwayat login & perubahan akses (data statis sementara) */}
+      <AccountActivityLog riwayat={RIWAYAT_AKUN} />
       <SupportCard />
-    </div>
+    </>
   );
 }

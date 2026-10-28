@@ -1,40 +1,37 @@
-import type { AdminUser, Akun, ApiResponse, StatusAkun, Toko, TokoFormValues } from "@/types";
-import { API_BASE_URL, parseResponse } from "./config";
+import {
+  type ActionResult,
+  createToko,
+  putuskanPengajuan,
+  removeProduk,
+  removeToko,
+  updateAkunStatus,
+  updateToko,
+} from "@/lib/actions/api";
+import type { StatusAkun, TokoFormValues } from "@/types";
+import { ApiError } from "./config";
 
-/** Request dari browser (Client Components) ke Express menggunakan Fetch API. */
-async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    ...init,
-    headers: { "Content-Type": "application/json", ...init.headers },
-  });
-  return parseResponse<T>(response);
+/**
+ * API untuk Client Components. Setiap fungsi memanggil Server Action (lib/actions/api.ts)
+ * yang meneruskan request ke Express beserta token sesi. Kegagalan diubah kembali
+ * menjadi ApiError agar komponen cukup memakai try/catch seperti biasa.
+ */
+async function unwrap<T>(pending: Promise<ActionResult<T>>): Promise<T> {
+  const result = await pending;
+  if (!result.ok) throw new ApiError(result.status, result.message);
+  return result.body;
 }
 
-const json = (body: unknown) => JSON.stringify(body);
-
-export const authApi = {
-  login: (identifier: string, password: string) =>
-    request<ApiResponse<{ token: string; user: AdminUser }>>("/auth/login", {
-      method: "POST",
-      body: json({ identifier, password }),
-    }),
-  logout: () => request<{ message: string }>("/auth/logout", { method: "POST" }),
-};
-
 export const tokoApi = {
-  create: (values: TokoFormValues) => request<ApiResponse<Toko>>("/toko", { method: "POST", body: json(values) }),
-  update: (slug: string, values: Partial<TokoFormValues>) =>
-    request<ApiResponse<Toko>>(`/toko/${slug}`, { method: "PUT", body: json(values) }),
-  remove: (slug: string) => request<{ message: string }>(`/toko/${slug}`, { method: "DELETE" }),
-  putuskanPengajuan: (slug: string, keputusan: "verifikasi" | "tolak") =>
-    request<{ message: string }>(`/pengajuan/${slug}`, { method: "PATCH", body: json({ keputusan }) }),
+  create: (values: TokoFormValues) => unwrap(createToko(values)),
+  update: (slug: string, values: Partial<TokoFormValues>) => unwrap(updateToko(slug, values)),
+  remove: (slug: string) => unwrap(removeToko(slug)),
+  putuskanPengajuan: (slug: string, keputusan: "verifikasi" | "tolak") => unwrap(putuskanPengajuan(slug, keputusan)),
 };
 
 export const produkApi = {
-  remove: (id: number) => request<{ message: string }>(`/produk/${id}`, { method: "DELETE" }),
+  remove: (id: number) => unwrap(removeProduk(id)),
 };
 
 export const akunApi = {
-  updateStatus: (id: number, status: StatusAkun) =>
-    request<ApiResponse<Akun>>(`/akun/${id}/status`, { method: "PATCH", body: json({ status }) }),
+  updateStatus: (id: number, status: StatusAkun) => unwrap(updateAkunStatus(id, status)),
 };

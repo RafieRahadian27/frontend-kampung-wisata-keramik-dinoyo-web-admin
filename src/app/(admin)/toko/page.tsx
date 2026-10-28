@@ -1,22 +1,24 @@
-import { Download, Landmark, CirclePlus } from "lucide-react";
 import type { Metadata } from "next";
-import { TokoManager } from "@/components/features/toko/TokoManager";
-import { TokoStats } from "@/components/features/toko/TokoStats";
-import { VerificationStandardCard } from "@/components/features/toko/VerificationStandardCard";
+import { CirclePlus, Download, Landmark } from "lucide-react";
 import { ButtonLink } from "@/components/ui/Button";
-import { ToastButton } from "@/components/ui/ToastButton";
 import { Eyebrow, PageHeader } from "@/components/ui/PageHeader";
+import { ToastButton } from "@/components/ui/ToastButton";
 import { getTokoList } from "@/lib/api/server";
+import { requirePermission } from "@/lib/dal";
+import { LorongDistributionCard } from "./components/LorongDistributionCard";
+import { TokoManager } from "./components/TokoManager";
+import { TokoStats } from "./components/TokoStats";
+import { VerificationStandardCard } from "./components/VerificationStandardCard";
 
 export const metadata: Metadata = { title: "Kelola Toko & Pengrajin" };
 
 export default async function KelolaTokoPage() {
+  const user = await requirePermission("toko:read");
   const { data, ringkasan } = await getTokoList();
 
   return (
-    <div className="flex flex-col gap-8">
+    <>
       <TokoStats ringkasan={ringkasan} />
-
       <PageHeader
         eyebrow={<Eyebrow icon={<Landmark />}>Sentra Keramik Kota Malang</Eyebrow>}
         title="Kelola Toko & Pengrajin"
@@ -27,16 +29,20 @@ export default async function KelolaTokoPage() {
               <Download className="size-4" aria-hidden />
               Unduh Rekap
             </ToastButton>
-            <ButtonLink href="/toko/tambah" size="lg">
-              <CirclePlus className="size-5" aria-hidden />+ Tambah Toko Baru
-            </ButtonLink>
+            {user.izin.includes("toko:create") && (
+              <ButtonLink href="/toko/tambah" size="lg">
+                <CirclePlus className="size-5" aria-hidden />+ Tambah Toko Baru
+              </ButtonLink>
+            )}
           </>
         }
       />
-
       <TokoManager initialToko={data} ringkasan={ringkasan} />
-
-      <VerificationStandardCard />
-    </div>
+      {/* Peta sebaran gerai per lorong + standar verifikasi paguyuban. */}
+      <div className="flex flex-col gap-6">
+        <LorongDistributionCard toko={data} />
+        <VerificationStandardCard />
+      </div>
+    </>
   );
 }

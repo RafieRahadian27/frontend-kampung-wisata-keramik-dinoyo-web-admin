@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ADMIN_NAV, type NavItem } from "@/constants/navigation";
+import { useAdminShell } from "@/context/AdminShellContext";
 import { cn } from "@/lib/utils";
 
 function isActive(item: NavItem, pathname: string) {
@@ -12,10 +13,11 @@ function isActive(item: NavItem, pathname: string) {
 
 export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
+  const { can } = useAdminShell();
 
   return (
     <nav aria-label="Menu administrasi" className="flex flex-col gap-1.5 px-4">
-      {ADMIN_NAV.map((item) => {
+      {ADMIN_NAV.filter((item) => can(item.izin)).map((item) => {
         const active = isActive(item, pathname);
         const Icon = item.icon;
         return (

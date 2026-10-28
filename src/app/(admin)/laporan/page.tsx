@@ -1,23 +1,25 @@
-import { House } from "lucide-react";
 import type { Metadata } from "next";
-import { BestPackagesCard } from "@/components/features/laporan/BestPackagesCard";
-import { DistrictDistributionCard } from "@/components/features/laporan/DistrictDistributionCard";
-import { QuickDownloadsCard } from "@/components/features/laporan/QuickDownloadsCard";
-import { ReportStats } from "@/components/features/laporan/ReportStats";
-import { ReportToolbar } from "@/components/features/laporan/ReportToolbar";
-import { ReservationHistory } from "@/components/features/laporan/ReservationHistory";
-import { VisitTrendChart } from "@/components/features/laporan/VisitTrendChart";
+import { House } from "lucide-react";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { Eyebrow, PageHeader } from "@/components/ui/PageHeader";
 import { getLaporan } from "@/lib/api/server";
+import { requirePermission } from "@/lib/dal";
+import { BestPackagesCard } from "./components/BestPackagesCard";
+import { DistrictDistributionCard } from "./components/DistrictDistributionCard";
+import { QuickDownloadsCard } from "./components/QuickDownloadsCard";
+import { ReportStats } from "./components/ReportStats";
+import { ReportToolbar } from "./components/ReportToolbar";
+import { ReservationHistory } from "./components/ReservationHistory";
+import { VisitTrendChart } from "./components/VisitTrendChart";
 
 export const metadata: Metadata = { title: "Laporan Kunjungan & Reservasi" };
 
 export default async function LaporanPage() {
+  await requirePermission("laporan:read");
   const laporan = await getLaporan();
 
   return (
-    <div className="flex flex-col gap-8">
+    <>
       <div className="flex flex-col gap-5">
         <PageHeader
           eyebrow={
@@ -39,9 +41,8 @@ export default async function LaporanPage() {
         />
         <ReportToolbar periode={laporan.periode} />
       </div>
-
       <ReportStats ringkasan={laporan.ringkasan} />
-
+      {/* Kolom utama (tren & riwayat reservasi) + kolom samping 320px (sebaran, paket, unduhan). */}
       <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="flex min-w-0 flex-col gap-6">
           <VisitTrendChart tren={laporan.tren} />
@@ -53,6 +54,6 @@ export default async function LaporanPage() {
           <QuickDownloadsCard unduhan={laporan.unduhan} className="md:col-span-2 xl:col-span-1" />
         </div>
       </div>
-    </div>
+    </>
   );
 }

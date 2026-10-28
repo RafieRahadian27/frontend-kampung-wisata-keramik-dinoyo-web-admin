@@ -3,6 +3,7 @@
 import { BadgeCheck, ShieldCheck } from "lucide-react";
 import { FormSection } from "@/components/ui/FormSection";
 import { Toggle } from "@/components/ui/Toggle";
+import { useAdminShell } from "@/context/AdminShellContext";
 import type { TokoFormValues } from "@/types";
 import type { UpdateField } from "./TokoForm";
 
@@ -12,6 +13,8 @@ interface StatusSectionProps {
 }
 
 export function StatusSection({ values, updateField }: StatusSectionProps) {
+  // Akreditasi adalah keputusan paguyuban; API mengabaikan field ini dari pengrajin.
+  const canAccredit = useAdminShell().user.role === "admin";
   return (
     <FormSection title="Status & Akreditasi Paguyuban" description="Kontrol keterbukaan data di portal publik" icon={<ShieldCheck />}>
       <div className="flex flex-col divide-y divide-outline-variant/40">
@@ -29,6 +32,7 @@ export function StatusSection({ values, updateField }: StatusSectionProps) {
             description="Tanda keaslian produk karya pengrajin binaan Dinoyo"
             tone="primary"
             checked={values.akreditasi}
+            disabled={!canAccredit}
             onChange={(checked) => updateField("akreditasi", checked)}
             adornment={<BadgeCheck className="size-4 text-secondary" aria-hidden />}
           />

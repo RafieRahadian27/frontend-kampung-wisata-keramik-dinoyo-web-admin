@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { TokoForm } from "@/components/features/toko-form/TokoForm";
-import { toFormValues } from "@/components/features/toko-form/formConfig";
 import { ApiError } from "@/lib/api/config";
 import { getToko } from "@/lib/api/server";
+import { requirePermission } from "@/lib/dal";
+import { TokoForm } from "../components/form/TokoForm";
+import { toFormValues } from "../components/form/formConfig";
 
 /** Ambil toko berdasarkan slug; 404 dari API diteruskan ke not-found.tsx. */
 async function loadToko(slug: string) {
@@ -23,6 +24,7 @@ export async function generateMetadata({ params }: PageProps<"/toko/[slug]">): P
 
 /** Rute dinamis [slug]: /toko/toko-keramik-sari-asih membuka formulir edit toko tersebut. */
 export default async function EditTokoPage({ params }: PageProps<"/toko/[slug]">) {
+  await requirePermission("toko:update");
   const { slug } = await params;
   const toko = await loadToko(slug);
 

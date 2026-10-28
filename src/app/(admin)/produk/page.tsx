@@ -1,19 +1,22 @@
 import type { Metadata } from "next";
 import { Download, Plus } from "lucide-react";
-import { ProdukManager } from "@/components/features/produk/ProdukManager";
-import { ProdukStats } from "@/components/features/produk/ProdukStats";
-import { SyncHelpCard } from "@/components/features/produk/SyncHelpCard";
 import { Eyebrow, PageHeader } from "@/components/ui/PageHeader";
 import { ToastButton } from "@/components/ui/ToastButton";
 import { getProdukList } from "@/lib/api/server";
+import { requirePermission } from "@/lib/dal";
+import { CuratedHighlights } from "./components/CuratedHighlights";
+import { ProdukManager } from "./components/ProdukManager";
+import { ProdukStats } from "./components/ProdukStats";
+import { SyncHelpCard } from "./components/SyncHelpCard";
 
 export const metadata: Metadata = { title: "Kelola Produk & Katalog" };
 
 export default async function KelolaProdukPage() {
+  await requirePermission("produk:read");
   const { data, kategori, ringkasan } = await getProdukList();
 
   return (
-    <div className="flex flex-col gap-8">
+    <>
       <PageHeader
         eyebrow={<Eyebrow>Katalog Resmi Paguyuban Dinoyo</Eyebrow>}
         title="Kelola Produk & Katalog Kriya"
@@ -31,8 +34,9 @@ export default async function KelolaProdukPage() {
         }
       />
       <ProdukStats ringkasan={ringkasan} />
+      <CuratedHighlights produk={data} />
       <ProdukManager initialProduk={data} kategori={kategori} totalKoleksi={ringkasan.totalKoleksi} />
       <SyncHelpCard />
-    </div>
+    </>
   );
 }

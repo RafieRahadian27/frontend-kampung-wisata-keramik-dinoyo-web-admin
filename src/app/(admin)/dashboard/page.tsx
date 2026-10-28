@@ -1,41 +1,45 @@
 import type { Metadata } from "next";
-import { DashboardGreeting } from "@/components/features/dashboard/DashboardGreeting";
-import { KpiGrid } from "@/components/features/dashboard/KpiGrid";
-import { QuickActions } from "@/components/features/dashboard/QuickActions";
-import { VerificationPanel } from "@/components/features/dashboard/VerificationPanel";
-import { WeekendClassCard } from "@/components/features/dashboard/WeekendClassCard";
-import { WhatsappTrafficCard } from "@/components/features/dashboard/WhatsappTrafficCard";
+import { AKTIVITAS_TERBARU } from "@/data/aktivitas";
 import { getDashboard } from "@/lib/api/server";
+import { requirePermission } from "@/lib/dal";
+import { DashboardGreeting } from "./components/DashboardGreeting";
+import { KpiGrid } from "./components/KpiGrid";
+import { QuickActions } from "./components/QuickActions";
+import { RecentActivityCard } from "./components/RecentActivityCard";
+import { VerificationPanel } from "./components/VerificationPanel";
+import { WeekendClassCard } from "./components/WeekendClassCard";
+import { WhatsappTrafficCard } from "./components/WhatsappTrafficCard";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
 /**
  * Server Component: data diambil langsung di server dari Express (dengan cache),
- * lalu diteruskan ke komponen anak lewat props.
+ * lalu diteruskan ke setiap komponen lewat props.
  */
 export default async function DashboardPage() {
-  const data = await getDashboard();
+  await requirePermission("dashboard:read");
+  const { admin, tanggal, statistik, verifikasi, whatsapp, kelasAkhirPekan } = await getDashboard();
 
   return (
-    <div className="flex flex-col gap-8">
-      <DashboardGreeting admin={data.admin} tanggal={data.tanggal} />
-
-      <KpiGrid statistik={data.statistik} />
-
+    <>
+      <DashboardGreeting admin={admin} tanggal={tanggal} />
+      <KpiGrid statistik={statistik} />
+      {/* Split 7/5: antrean verifikasi toko di kiri, trafik WhatsApp & kelas akhir pekan di kanan. */}
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
         <VerificationPanel
           className="xl:col-span-7"
-          pengajuan={data.verifikasi.pengajuan}
-          terakhirDisetujui={data.verifikasi.terakhirDisetujui}
-          totalPendaftar={data.verifikasi.totalPendaftarTahunIni}
+          pengajuan={verifikasi.pengajuan}
+          terakhirDisetujui={verifikasi.terakhirDisetujui}
+          totalPendaftar={verifikasi.totalPendaftarTahunIni}
         />
         <div className="flex flex-col gap-5 xl:col-span-5">
-          <WhatsappTrafficCard whatsapp={data.whatsapp} />
-          <WeekendClassCard {...data.kelasAkhirPekan} />
+          <WhatsappTrafficCard whatsapp={whatsapp} />
+          <WeekendClassCard {...kelasAkhirPekan} />
         </div>
       </div>
-
+      {/* Linimasa aktivitas terbaru — sementara memakai data statis sampai endpoint audit log tersedia. */}
+      <RecentActivityCard aktivitas={AKTIVITAS_TERBARU} />
       <QuickActions />
-    </div>
+    </>
   );
 }

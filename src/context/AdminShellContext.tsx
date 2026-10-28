@@ -1,10 +1,12 @@
 "use client";
 
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
-import type { AdminUser } from "@/types";
+import type { AdminUser, Permission } from "@/types";
 
 interface AdminShellContextValue {
   user: AdminUser;
+  /** Cek izin untuk menyembunyikan tombol yang tidak relevan (bukan kontrol keamanan). */
+  can: (permission: Permission) => boolean;
   isSidebarOpen: boolean;
   openSidebar: () => void;
   closeSidebar: () => void;
@@ -27,10 +29,11 @@ export function AdminShellProvider({ user, children }: { user: AdminUser; childr
     setLogoutOpen(true);
   }, []);
   const closeLogout = useCallback(() => setLogoutOpen(false), []);
+  const can = useCallback((permission: Permission) => user.izin.includes(permission), [user]);
 
   const value = useMemo(
-    () => ({ user, isSidebarOpen, openSidebar, closeSidebar, isLogoutOpen, openLogout, closeLogout }),
-    [user, isSidebarOpen, openSidebar, closeSidebar, isLogoutOpen, openLogout, closeLogout],
+    () => ({ user, can, isSidebarOpen, openSidebar, closeSidebar, isLogoutOpen, openLogout, closeLogout }),
+    [user, can, isSidebarOpen, openSidebar, closeSidebar, isLogoutOpen, openLogout, closeLogout],
   );
 
   return <AdminShellContext.Provider value={value}>{children}</AdminShellContext.Provider>;

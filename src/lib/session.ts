@@ -1,20 +1,16 @@
-import type { AdminUser } from "@/types";
-
+/**
+ * Konstanta sesi yang aman dipakai di proxy (tanpa akses server-only).
+ * Cookie hanya berisi token acak (opaque) — data pengguna tidak disimpan di cookie,
+ * sehingga ukurannya kecil dan tidak bisa dipalsukan dari browser.
+ */
 export const SESSION_COOKIE = "kd_session";
-export const USER_COOKIE = "kd_user";
 
-export const FALLBACK_ADMIN: AdminUser = {
-  nama: "Admin Dinoyo",
-  sapaan: "Pak Joko Santoso",
-  email: "admin@keramikdinoyo.id",
-  peran: "Admin Paguyuban",
-};
-
-export function parseUserCookie(value: string | undefined): AdminUser {
-  if (!value) return FALLBACK_ADMIN;
-  try {
-    return { ...FALLBACK_ADMIN, ...(JSON.parse(value) as Partial<AdminUser>) };
-  } catch {
-    return FALLBACK_ADMIN;
+/**
+ * Cegah open redirect: hanya path internal ("/x"), bukan "//evil.com" atau "/\evil.com".
+ */
+export function safeRedirectPath(value: unknown, fallback = "/"): string {
+  if (typeof value !== "string" || !value.startsWith("/") || value.startsWith("//") || value.startsWith("/\\")) {
+    return fallback;
   }
+  return value;
 }
